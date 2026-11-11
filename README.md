@@ -1,207 +1,385 @@
-# Invoice OCR Validator
+# 📄 Invoice OCR Validator
 
-A local Python CLI application that processes invoice images using Tesseract OCR, extracts structured invoice data, validates required fields and financial calculations, stores valid invoices in SQLite, and generates JSON reports for records requiring manual review.
+### Automated Invoice Data Extraction, Validation & Duplicate Detection Using Python
 
-## Features
+<p align="center">
+  <strong>Turning Invoice Images into Structured, Validated Data</strong>
+</p>
 
-- OCR extraction using Tesseract and pytesseract.
-- Invoice field extraction using label-based parsing.
-- Required-field and financial arithmetic validation.
-- Date normalization to ISO `YYYY-MM-DD`.
-- Monetary value handling using Python `Decimal`.
-- Duplicate invoice detection.
-- SQLite persistence with source-scan traceability.
-- JSON reports for extracted records and manual review.
-- Automated tests using pytest.
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.x-blue?logo=python" />
+  <img src="https://img.shields.io/badge/OCR-Tesseract-green" />
+  <img src="https://img.shields.io/badge/Database-SQLite-003B57?logo=sqlite" />
+  <img src="https://img.shields.io/badge/Testing-Pytest-0A9EDC?logo=pytest" />
+  <img src="https://img.shields.io/badge/Interface-CLI-orange" />
+  <img src="https://img.shields.io/badge/Status-Completed-success" />
+</p>
 
-## Requirements
+---
 
-- Python 3.10+
-- Tesseract OCR executable
-- Python packages listed in `requirements.txt`
+## 📌 Overview
 
-## Installation
+**Invoice OCR Validator** is a Python-based command-line application designed to automate invoice data extraction, validation, and storage.
 
-### Ubuntu / Debian
+The application uses **Tesseract OCR** to extract text from invoice images and processes the extracted information to identify important invoice fields, including invoice number, vendor name, invoice date, currency, subtotal, tax, and total amount.
+
+It validates extracted information, detects duplicate invoices, maintains source-scan traceability, and stores validated invoice records in an SQLite database.
+
+The system also identifies incomplete or ambiguous records and marks them for manual review instead of silently accepting uncertain information.
+
+## ✨ Key Features
+
+- 🖼️ **Invoice Image Processing** — Process multiple invoice images from an input directory.
+- 🔍 **OCR-Based Text Extraction** — Extract invoice text using Tesseract OCR through Pytesseract.
+- 📋 **Structured Data Extraction** — Identify invoice number, vendor, date, currency, subtotal, tax, and total.
+- 🔄 **Data Normalization** — Normalize invoice dates and monetary values.
+- ✅ **Invoice Validation** — Check required fields and verify subtotal + tax = total.
+- ⚠️ **Manual Review Handling** — Flag missing, invalid, or ambiguous information with specific review reasons.
+- 🔁 **Duplicate Detection** — Prevent duplicate invoice records using invoice identity constraints.
+- 🗄️ **SQLite Database** — Persist validated invoices and maintain source-scan records.
+- 🔐 **Source Traceability** — Track original image filenames, paths, OCR text paths, and SHA-256 hashes.
+- 📊 **JSON & CSV Reports** — Generate structured extraction reports and review reports.
+- 🔄 **Idempotent Processing** — Support repeated imports without creating duplicate invoice records.
+- 🧪 **Automated Testing** — Test validation, duplicate handling, incomplete inputs, and processing behaviour.
+
+## 🏗️ System Architecture
+
+The application follows a modular Python architecture with separate components for OCR processing, data extraction, validation, database operations, and reporting.
+
+```mermaid
+flowchart TD
+    A[Invoice Images] --> B[OCR Processing]
+    B --> C[Raw OCR Text]
+    C --> D[Data Extraction]
+    D --> E[Data Normalization]
+    E --> F[Invoice Validation]
+    F --> G{Validation Result}
+    G -->|Valid| H[SQLite Database]
+    G -->|Needs Review| I[Review Report]
+    H --> J[JSON and CSV Reports]
+    I --> J
+    B --> K[Raw OCR Text Files]
+    H --> L[Source Scan Tracking]
+```
+
+### 1. Input Layer
+
+Responsible for accepting invoice images.
+
+**Supported workflow:**
+- Read invoice images from the input directory.
+- Process multiple files in one execution.
+- Handle individual image-processing errors without stopping the entire batch.
+
+### 2. OCR Processing Layer
+
+**Technology:** Tesseract OCR, Pytesseract, Pillow
+
+Responsible for:
+- Reading invoice images.
+- Extracting text using Tesseract OCR.
+- Saving raw OCR output as text files.
+- Maintaining a link between source images and extracted text.
+
+### 3. Data Extraction Layer
+
+**Module:** `extractor.py`
+
+Responsible for:
+- Extracting invoice numbers and vendor names.
+- Identifying invoice dates and currency.
+- Extracting subtotal, tax, and total amounts.
+- Normalizing date and monetary formats.
+- Using Decimal for accurate monetary calculations.
+
+### 4. Validation Layer
+
+**Module:** `validator.py`
+
+Responsible for:
+- Checking required invoice fields.
+- Validating supported currency values.
+- Checking subtotal and tax calculations against the total.
+- Identifying incomplete or ambiguous information.
+- Assigning validation status and review reasons.
+
+### 5. Database Layer
+
+**Module:** `db.py`
+
+**Database:** SQLite
+
+Responsible for:
+- Storing validated invoice records.
+- Preventing duplicate invoice entries.
+- Maintaining source-scan traceability.
+- Handling repeated imports through database conflict handling.
+
+### 6. Reporting Layer
+
+Generates structured output files:
+
+| Output | Purpose |
+|---|---|
+| `extracted_records.json` | Extracted invoice records and validation results |
+| `extracted_records.csv` | Tabular invoice extraction results |
+| `needs_review.json` | Incomplete or invalid records with review reasons |
+| `raw_ocr/` | Original OCR text extracted from each image |
+
+## 🛠️ Tech Stack
+
+| Technology | Purpose |
+|---|---|
+| Python | Core application development |
+| Tesseract OCR | Optical character recognition |
+| Pytesseract | Python integration with Tesseract |
+| Pillow | Image loading and processing |
+| Regular Expressions | Invoice field extraction |
+| Decimal | Accurate monetary calculations |
+| SQLite | Invoice and source-scan storage |
+| JSON | Structured extraction and review reports |
+| CSV | Tabular output generation |
+| Pytest | Automated testing |
+
+## 📁 Project Structure
+
+```text
+invoice-ocr-validator/
+│
+├── database/
+│   └── schema.sql
+│
+├── input/
+│   ├── invoice-101.png
+│   ├── invoice-101-copy.png
+│   ├── invoice-102.png
+│   └── invoice-103-review.png
+│
+├── output/
+│   ├── extracted_records.csv
+│   ├── extracted_records.json
+│   ├── needs_review.json
+│   │
+│   └── raw_ocr/
+│       ├── invoice-101.txt
+│       ├── invoice-101-copy.txt
+│       ├── invoice-102.txt
+│       └── invoice-103-review.txt
+│
+├── src/
+│   ├── __init__.py
+│   ├── main.py
+│   ├── extractor.py
+│   ├── validator.py
+│   └── db.py
+│
+├── tests/
+│   └── test_pipeline.py
+│
+├── invoices.sqlite3
+├── requirements.txt
+├── README.md
+└── .gitignore
+```
+
+## 🚀 Getting Started
+
+Follow these steps to install and run the application locally.
+
+### Prerequisites
+
+- Python 3.x
+- pip package manager
+- Tesseract OCR installed on your system
+- Git (optional)
+
+### 1. Clone the Repository
 
 ```bash
-sudo apt-get update
-sudo apt-get install -y tesseract-ocr
-
-python -m venv .venv
-source .venv/bin/activate
-
-pip install -r requirements.txt
+git clone <YOUR_REPOSITORY_URL>
+cd invoice-ocr-validator
 ```
 
-### macOS
+### 2. Create a Virtual Environment
+
+**Windows:**
 
 ```bash
-brew install tesseract
-
-python3 -m venv .venv
-source .venv/bin/activate
-
-pip install -r requirements.txt
-```
-
-### Windows
-
-1. Install Tesseract OCR using the UB Mannheim Windows builds.
-2. Add the Tesseract installation directory to the Windows PATH environment variable.
-3. Open a new CMD terminal and verify the installation:
-
-```cmd
-tesseract --version
-```
-
-4. Create and activate a virtual environment:
-
-```cmd
 python -m venv venv
 venv\Scripts\activate
 ```
 
-5. Install the Python dependencies:
+**Linux / macOS:**
 
-```cmd
-python -m pip install -r requirements.txt
+```bash
+python3 -m venv venv
+source venv/bin/activate
 ```
 
-If Tesseract is installed but not on PATH, add its location for the current PowerShell session before running the CLI:
+### 3. Install Python Dependencies
 
-```powershell
-$env:PATH = "C:\Program Files\Tesseract-OCR;$env:PATH"
+```bash
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### 4. Install Tesseract OCR
+
+Tesseract is an external OCR engine and must be installed separately from Python dependencies.
+
+**Windows:**
+
+Download and install Tesseract OCR, then ensure its installation directory is added to the system PATH.
+
+Verify installation:
+
+```bash
 tesseract --version
-.\venv\Scripts\python.exe -m src.main --input input --output output --db invoices.sqlite3
 ```
 
-## Input Fixtures
+**Linux (Ubuntu/Debian):**
 
-Place the four supplied invoice images inside the `input/` directory:
+```bash
+sudo apt update
+sudo apt install tesseract-ocr
+```
 
-- [invoice-101.png](https://thenightmarketer.com/client/hiring/fixtures/invoice-101.png)
-- [invoice-102.png](https://thenightmarketer.com/client/hiring/fixtures/invoice-102.png)
-- [invoice-101-copy.png](https://thenightmarketer.com/client/hiring/fixtures/invoice-101-copy.png)
-- [invoice-103-review.png](https://thenightmarketer.com/client/hiring/fixtures/invoice-103-review.png)
+**macOS:**
 
-The application performs OCR on the images found in the input directory. It does not hardcode the expected fixture results.
+```bash
+brew install tesseract
+```
 
-## Running the Application
+### 5. Run the Application
 
-From the project root:
+Place invoice images inside the `input/` directory.
+
+Execute:
 
 ```bash
 python -m src.main --input input --output output --db invoices.sqlite3
 ```
 
-The application generates:
+The application processes the available invoice images and generates extraction reports, review reports, raw OCR text files, and database records.
 
-| Output | Description |
-|---|---|
-| `output/raw_ocr/` | Raw OCR text files |
-| `output/extracted_records.json` | Processing results for all source images |
-| `output/needs_review.json` | Records requiring manual review |
-| `output/extracted_records.csv` | Tabular report with extracted fields and validation reasons |
-| `invoices.sqlite3` | SQLite database containing invoice and source-scan records |
-
-Run the same command again to verify repeatability and duplicate handling.
-
-Invoice records use a unique identity based on invoice number and normalized vendor name. If that identity already exists but the date, currency, or amounts differ, the incoming scan is retained and marked `needs_review` rather than silently discarded. Source scans are upserted using the input filename and SHA-256 content hash, rather than a machine-specific absolute path.
-
-The connection setup reads and executes `database/schema.sql`; it does not rewrite or clean existing scan rows on connection.
-
-## Running Tests
-
-Install dependencies if not already installed:
-
-```bash
-python -m pip install -r requirements.txt
-```
-
-Run the automated test suite:
+### 6. Run Automated Tests
 
 ```bash
 python -m pytest -q
 ```
 
-The tests use controlled OCR text and in-memory SQLite. They do not depend on the local Tesseract version or fixture-image OCR output.
+## 🗄️ Database Design
 
-## Data and Validation Decisions
+The application uses **SQLite** with two primary tables.
 
-- Dates are normalized to ISO `YYYY-MM-DD`.
-- Monetary values are parsed using `Decimal` and serialized as decimal strings.
-- SQLite stores monetary values as TEXT to avoid binary floating-point precision issues.
-- A valid invoice requires an invoice number, vendor, date, currency, subtotal, tax, and total.
-- The financial validation allows a one-cent rounding tolerance.
-- Duplicate invoice identity is `(invoice_number, normalized vendor name)`.
-- Invoice numbers are not assumed to be globally unique across vendors.
-- Source scans retain their original traceability and link to the corresponding invoice when valid.
-- Missing or unrecognized values are sent to manual review rather than guessed.
-- Numeric dates using `/` or `-` are interpreted as `DD/MM/YYYY` or `DD-MM-YYYY`; ISO `YYYY-MM-DD` and English month names are also supported. This day-first convention matches the supplied fixtures.
-- Ambiguous monetary amounts are sent to manual review rather than interpreted using an assumed locale.
-- Currency recognition is limited to INR, USD, EUR, and GBP.
+### 1. `invoices`
 
-## Relevant Technical Experience
+Stores unique validated invoice records.
 
-I have not yet personally resolved a Python/database issue in a SQL-backed project. My closest relevant technical problem was in my skin-lesion classification project using the MILK10k dataset: combining clinical images, dermoscopic images, and patient metadata in one Python training pipeline while addressing class imbalance.
+Important fields:
+- Invoice ID
+- Invoice number
+- Vendor name
+- Normalized vendor name
+- Invoice date
+- Currency
+- Subtotal
+- Tax
+- Total
 
-**My contribution:** I handled image preprocessing, metadata cleaning and integration, categorical encoding, numerical normalization, stratified train/validation preparation, and model implementation and evaluation. I implemented a dual-input EfficientNetV2-S model combining both image types with metadata, and used image augmentation and class-weighted loss to address imbalance. Broader project coordination and team-level decisions were separate from my individual implementation and experiments.
+A unique constraint on invoice number and normalized vendor name helps prevent duplicate invoice records.
 
-**Verification:** I checked the merged data and confirmed 5,164 lesions had both image types, then checked the stratified split and evaluated validation loss, accuracy, and macro F1. The best reported validation accuracy was 75.94%, with macro F1 of 0.2572, highlighting remaining performance issues for underrepresented classes.
+### 2. `source_scans`
 
-**Data storage:** The project used MILK10k images and CSV ground-truth/metadata files; it did not use a SQL database. This assignment CLI uses SQLite.
+Maintains traceability for processed invoice images.
 
-## Application Answers
+Important fields:
+- Source filename
+- Source path
+- SHA-256 hash
+- OCR text path
+- Import status
+- Review reasons
+- Associated invoice ID
 
-1. **Name and role:** Farhan Khan — Junior Python Developer
-2. **City/locality and office attendance:** Okhla, Delhi; yes, I can commute to the Wazirpur/Shalimar Bagh office full-time.
-3. **Compensation and availability:** Current/last CTC: ₹4,80,000 per annum (approximately ₹40,000/month). Expected monthly salary: as per company standards; negotiable. The advertised ₹20,000–₹30,000/month range is discussable. Notice period: immediate. Earliest joining: immediately/as soon as possible.
-4. **Experience and project:** 8 months of professional development experience, excluding internships. Relevant project: AI-based skin cancer detection for the ISIC challenge using MILK10k. Personal contribution and data storage are described above.
+This design allows multiple source scans to reference the same invoice record while preserving individual scan information.
 
-## Limitations and Future Improvements
+## 🧪 Testing
 
-- The extractor uses label-based regular expressions, so unusual invoice layouts and OCR errors may require manual review.
-- Handwritten text and low-resolution scans may reduce OCR accuracy.
-- Vendor extraction currently uses a conservative first-line heuristic.
-- Production use could benefit from vendor-specific templates and confidence-aware extraction.
-- Add human correction after extraction and before approval: retain original OCR text, store corrected values with reviewer and timestamp, and link corrections to `source_scans`.
-- Add bounded retries around transient image/OCR failures in `process_directory`; ambiguous fields should go to review, not be retried as if they were transient errors.
-- Image preprocessing such as deskewing, denoising, and contrast enhancement could improve OCR results.
-- Additional improvements could include structured logging, schema migrations, and stronger concurrency handling.
+The project includes automated tests using Pytest.
 
-## Sample Fixture Results
+The test suite covers:
 
-The existing `output/` directory contains a run of the four supplied images. Tesseract is installed at `C:\Program Files\Tesseract-OCR\tesseract.exe`; it may need to be added to PATH in a new shell as shown above. The OCR fixtures are processed at runtime; their answers are not hardcoded.
+- Successful invoice validation.
+- Duplicate invoice handling.
+- Repeated import and idempotency.
+- Incomplete and ambiguous invoice information.
+- Date and monetary normalization.
+- Failed image handling.
+- Fixture-based invoice extraction.
 
-| Image | Sample result |
-|---|---|
-| `invoice-101.png` | Valid TNM-101 invoice |
-| `invoice-101-copy.png` | Valid duplicate of TNM-101 |
-| `invoice-102.png` | Valid TNM-102 invoice |
-| `invoice-103-review.png` | Needs review |
+Run the test suite:
 
-The sample TNM-103 record is flagged for two reasons:
+```bash
+python -m pytest -q
+```
 
-1. The invoice date was missing or unrecognized.
-2. The subtotal and tax add up to 1180.00, while the printed total is 1170.00.
+## 📊 Sample Processing Results
 
-### Observed Sample Counts
+The supplied demonstration dataset contains four invoice images.
 
-The existing sample output and database contain:
+| Metric | Result |
+|---|---:|
+| Total source images | 4 |
+| Valid source records | 3 |
+| Records requiring review | 1 |
+| Unique invoice records | 2 |
+| Source scans tracked | 4 |
 
-- Images processed: 4
-- Valid source records: 3
-- Records requiring manual review: 1
-- Unique valid invoices in SQLite: 2
-- Source scans in SQLite: 4
-- Automated tests: 10 passed in the project virtual environment
-- Repeat-import behavior: covered by the automated tests
+**Duplicate handling:** Two scans of invoice TNM-101 are associated with the same database invoice record while both source scans remain independently traceable.
 
-The two TNM-101 images remain separately traceable as source scans while sharing one invoice record.
+**Manual review:** Invoice TNM-103 is flagged because its date is missing and the subtotal, tax, and total values do not satisfy the validation check.
 
-## Candidate Completion Details
+## ⚠️ Current Limitations
 
-- Actual time spent: approximately 1.5–2 hours.
-- Environment used for this implementation: Windows, Python, SQLite, Tesseract OCR.
-- AI use: GitHub Copilot assisted with implementation and review.
+- OCR accuracy depends on image quality, text clarity, and invoice layout.
+- The extraction logic is based on predefined patterns and may require adaptation for unfamiliar invoice formats.
+- Ambiguous values are flagged for manual review rather than automatically inferred.
+- Tesseract OCR must be installed separately on the host machine.
+- The application currently uses SQLite for local persistence rather than a centralized database service.
+- The command-line interface is designed for local processing and does not currently provide a web-based dashboard.
+
+## 🔮 Future Improvements
+
+- Support additional invoice layouts and document formats.
+- Improve OCR accuracy through image preprocessing.
+- Introduce configurable vendor-specific extraction rules.
+- Add more comprehensive validation and reconciliation checks.
+- Support additional database backends such as PostgreSQL or MySQL.
+- Add a web-based interface for invoice review and approval.
+- Implement more advanced duplicate detection.
+- Improve logging, monitoring, and error reporting.
+
+## 🔒 Data Handling & Reliability
+
+- Raw OCR text is retained for traceability.
+- Original source filenames and scan information are recorded.
+- SHA-256 hashes help identify source files.
+- Invalid or uncertain invoice records are flagged for manual review.
+- Decimal arithmetic is used to avoid floating-point precision issues in financial calculations.
+- Repeated processing is designed to avoid duplicate invoice records.
+
+## 👨‍💻 Author
+
+**Farhan Khan**
+
+Junior Python Developer Candidate
+
+Developed as part of the **The Night Marketer – Junior Python Developer Practical Screening Task**.
+
+---
+
+<p align="center">
+  <strong>Invoice OCR Validator</strong><br/>
+  <sub>Automated Extraction • Reliable Validation • Duplicate Detection • Traceable Storage</sub>
+</p>
