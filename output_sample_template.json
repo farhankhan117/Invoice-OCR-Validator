@@ -1,0 +1,24 @@
+{
+  "notice": "Template only: run the CLI on the supplied images to generate actual OCR results.",
+  "example_record_shape": {
+    "source_filename": "invoice-example.png",
+    "status": "needs_review",
+    "record": {
+      "invoice_number": null,
+      "vendor": null,
+      "invoice_date": null,
+      "currency": null,
+      "subtotal": null,
+      "tax": null,
+      "total": null
+    },
+    "validation": {
+      "valid": false,
+      "reasons": [
+        "Example placeholder; replaced by actual validation reasons on run."
+      ]
+    },
+    "database_invoice_id": null,
+    "raw_ocr_file": null
+  }
+}
