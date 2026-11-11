@@ -1,0 +1,5 @@
+﻿source_filename,status,invoice_number,vendor,invoice_date,currency,subtotal,tax,total,validation_valid,review_reasons,database_invoice_id,raw_ocr_file
+invoice-101-copy.png,valid,TNM-101,ACME OFFICE SUPPLIES,2026-10-01,INR,1200.50,216.09,1416.59,True,,1,raw_ocr/invoice-101-copy.txt
+invoice-101.png,valid,TNM-101,Acme Office Supplies,2026-10-01,INR,1200.50,216.09,1416.59,True,,1,raw_ocr/invoice-101.txt
+invoice-102.png,valid,TNM-102,Beta Print Studio,2026-10-02,INR,1500.00,270.00,1770.00,True,,3,raw_ocr/invoice-102.txt
+invoice-103-review.png,needs_review,TNM-103,Gamma Paper Co,,INR,1000.00,180.00,1170.00,False,Missing or unrecognized required field: invoice_date; Subtotal + tax does not equal total,,raw_ocr/invoice-103-review.txt

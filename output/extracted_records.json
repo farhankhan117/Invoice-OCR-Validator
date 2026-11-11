@@ -1,0 +1,81 @@
+[
+  {
+    "source_filename": "invoice-101-copy.png",
+    "status": "valid",
+    "record": {
+      "invoice_number": "TNM-101",
+      "vendor": "ACME OFFICE SUPPLIES",
+      "invoice_date": "2026-10-01",
+      "currency": "INR",
+      "subtotal": "1200.50",
+      "tax": "216.09",
+      "total": "1416.59"
+    },
+    "validation": {
+      "valid": true,
+      "reasons": []
+    },
+    "database_invoice_id": 1,
+    "raw_ocr_file": "raw_ocr/invoice-101-copy.txt"
+  },
+  {
+    "source_filename": "invoice-101.png",
+    "status": "valid",
+    "record": {
+      "invoice_number": "TNM-101",
+      "vendor": "Acme Office Supplies",
+      "invoice_date": "2026-10-01",
+      "currency": "INR",
+      "subtotal": "1200.50",
+      "tax": "216.09",
+      "total": "1416.59"
+    },
+    "validation": {
+      "valid": true,
+      "reasons": []
+    },
+    "database_invoice_id": 1,
+    "raw_ocr_file": "raw_ocr/invoice-101.txt"
+  },
+  {
+    "source_filename": "invoice-102.png",
+    "status": "valid",
+    "record": {
+      "invoice_number": "TNM-102",
+      "vendor": "Beta Print Studio",
+      "invoice_date": "2026-10-02",
+      "currency": "INR",
+      "subtotal": "1500.00",
+      "tax": "270.00",
+      "total": "1770.00"
+    },
+    "validation": {
+      "valid": true,
+      "reasons": []
+    },
+    "database_invoice_id": 3,
+    "raw_ocr_file": "raw_ocr/invoice-102.txt"
+  },
+  {
+    "source_filename": "invoice-103-review.png",
+    "status": "needs_review",
+    "record": {
+      "invoice_number": "TNM-103",
+      "vendor": "Gamma Paper Co",
+      "invoice_date": null,
+      "currency": "INR",
+      "subtotal": "1000.00",
+      "tax": "180.00",
+      "total": "1170.00"
+    },
+    "validation": {
+      "valid": false,
+      "reasons": [
+        "Missing or unrecognized required field: invoice_date",
+        "Subtotal + tax does not equal total"
+      ]
+    },
+    "database_invoice_id": null,
+    "raw_ocr_file": "raw_ocr/invoice-103-review.txt"
+  }
+]

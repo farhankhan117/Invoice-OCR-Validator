@@ -1,0 +1,24 @@
+[
+  {
+    "source_filename": "invoice-103-review.png",
+    "status": "needs_review",
+    "record": {
+      "invoice_number": "TNM-103",
+      "vendor": "Gamma Paper Co",
+      "invoice_date": null,
+      "currency": "INR",
+      "subtotal": "1000.00",
+      "tax": "180.00",
+      "total": "1170.00"
+    },
+    "validation": {
+      "valid": false,
+      "reasons": [
+        "Missing or unrecognized required field: invoice_date",
+        "Subtotal + tax does not equal total"
+      ]
+    },
+    "database_invoice_id": null,
+    "raw_ocr_file": "raw_ocr/invoice-103-review.txt"
+  }
+]
